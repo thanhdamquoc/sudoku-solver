@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sudoku Solver</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <style>
+        td {
+            width: 75px;
+            height: 75px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid" id="myContainer">
+
+</div>
+</body>
+</html>
+<script>
+    // let sudokuSample = [[0, 0, 0, 2, 6, 0, 7, 0, 1], //easy
+    //     [6, 8, 0, 0, 7, 0, 0, 9, 0],
+    //     [1, 9, 0, 0, 0, 4, 5, 0, 0],
+    //     [8, 2, 0, 1, 0, 0, 0, 4, 0],
+    //     [0, 0, 4, 6, 0, 2, 9, 0, 0],
+    //     [0, 5, 0, 0, 0, 3, 0, 2, 8],
+    //     [0, 0, 9, 3, 0, 0, 0, 7, 4],
+    //     [0, 4, 0, 0, 5, 0, 0, 3, 6],
+    //     [7, 0, 3, 0, 1, 8, 0, 0, 0]];
+    //
+    // let sudokuSample = [[1, 0, 0, 4, 8, 9, 0, 0, 6], //easy
+    //     [7, 3, 0, 0, 0, 0, 0, 4, 0],
+    //     [0, 0, 0, 0, 0, 1, 2, 9, 5],
+    //     [0, 0, 7, 1, 2, 0, 6, 0, 0],
+    //     [5, 0, 0, 7, 0, 3, 0, 0, 8],
+    //     [0, 0, 6, 0, 9, 5, 7, 0, 0],
+    //     [9, 1, 4, 6, 0, 0, 0, 0, 0],
+    //     [0, 2, 0, 0, 0, 0, 0, 3, 7],
+    //     [8, 0, 0, 5, 1, 2, 0, 0, 4]];
+
+    // let sudokuSample = [[0, 2, 0, 6, 0, 8, 0, 0, 0], //intermediate
+    //     [5, 8, 0, 0, 0, 9, 7, 0, 0],
+    //     [0, 0, 0, 0, 4, 0, 0, 0, 0],
+    //     [3, 7, 0, 0, 0, 0, 5, 0, 0],
+    //     [6, 0, 0, 0, 0, 0, 0, 0, 4],
+    //     [0, 0, 8, 0, 0, 0, 0, 1, 3],
+    //     [0, 0, 0, 0, 2, 0, 0, 0, 0],
+    //     [0, 0, 9, 8, 0, 0, 0, 3, 6],
+    //     [0, 0, 0, 3, 0, 6, 0, 9, 0]]
+
+    let sudokuSample =[[0, 0, 0, 6, 0, 0, 4, 0, 0], //difficult
+        [7, 0, 0, 0, 0, 3, 6, 0, 0],
+        [0, 0, 0, 0, 9, 1, 0, 8, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 5, 0, 1, 8, 0, 0, 0, 3],
+        [0, 0, 0, 3, 0, 6, 0, 4, 5],
+        [0, 4, 0, 2, 0, 0, 0, 6, 0],
+        [9, 0, 3, 0, 0, 0, 0, 0, 0],
+        [0, 2, 0, 0, 0, 0, 1, 0, 0]]
+
+    // let sudokuSample = [[0, 2, 0, 0, 0, 0, 0, 0, 0], //not fun
+    //     [0, 0, 0, 6, 0, 0, 0, 0, 3],
+    //     [0, 7, 4, 0, 8, 0, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 3, 0, 0, 2],
+    //     [0, 8, 0, 0, 4, 0, 0, 1, 0],
+    //     [6, 0, 0, 5, 0, 0, 0, 0, 0],
+    //     [0, 0, 0, 0, 1, 0, 7, 8, 0],
+    //     [5, 0, 0, 0, 0, 9, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 0, 0, 4, 0]]
+
+
+    let tableHTML = "<table>";
+    let draft = [];
+
+    for (let i = 0; i < 9; i++) {
+        draft[i] = [];
+        tableHTML += "<tr>"
+        for (let j = 0; j < 9; j++) {
+            let cellValue = sudokuSample[i][j];
+            draft[i][j] = [cellValue];
+            let cellID = "cell-" + i + "-" + j;
+
+            if (cellValue === 0) {
+                tableHTML += "<td id=" + cellID + " style='background: white'>"+ cellValue +"</td>"
+            } else {
+                tableHTML += "<td id=" + cellID + " style='background: red'>"+ cellValue +"</td>"
+            }
+        }
+        tableHTML += "</tr>"
+    }
+    tableHTML += "</table>";
+    document.getElementById("myContainer").innerHTML = tableHTML;
+
+    //add border around each house
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            let cellID = "cell-" + i + "-" + j;
+            let cellEl = document.getElementById(cellID);
+            if (i%3 === 0) {
+                cellEl.style.borderTop = "1px solid black";
+            }
+            if (j%3 === 0) {
+                cellEl.style.borderLeft = "1px solid black";
+            }
+        }
+    }
+
+    let runTime = 0;
+    while (runTime <= 100) {
+        runTime++;
+        //simple elimination
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (sudokuSample[i][j] === 0) {
+                    draft[i][j] = [1,2,3,4,5,6,7,8,9];
+                    //check horizontal
+                    for (let c = 0; c < 9; c++) {
+                        if (j !== c && sudokuSample[i][c] !== 0) {
+                            let where = draft[i][j].indexOf(sudokuSample[i][c]);
+                            if (where !== -1) {
+                                draft[i][j].splice(where,1);
+                            }
+                        }
+                    }
+                    //check vertical
+                    for (let r = 0; r < 9; r++) {
+                        if (i !== r && sudokuSample[r][j] !== 0) {
+                            let where = draft[i][j].indexOf(sudokuSample[r][j]);
+                            if (where !== -1) {
+                                draft[i][j].splice(where,1);
+                            }
+                        }
+                    }
+                    //check house
+                    let houseStartRow = Math.floor(i/3)*3;
+                    let houseStartCol = Math.floor(j/3)*3;
+                    for (let r = houseStartRow; r < (houseStartRow+3); r++) {
+                        for (let c = houseStartCol; c < (houseStartCol+3); c++) {
+                            if (i !== r && j !== c && sudokuSample[r][c] !== 0) {
+                                let where = draft[i][j].indexOf(sudokuSample[r][c]);
+                                if (where !== -1) {
+                                    draft[i][j].splice(where,1);
+                                }
+                            }
+                        }
+                    }
+
+                    //output
+                    let cellID = "cell-" + i + "-" + j;
+                    document.getElementById(cellID).innerHTML = draft[i][j];
+                    if (draft[i][j].length === 1) {
+                        document.getElementById(cellID).style.background = "lightblue";
+                        sudokuSample[i][j] = draft[i][j][0];
+                    }
+                    // else if (draft[i][j].length > 1) {
+                    //     isSolved = false;
+                    // }
+                }
+            }
+        }
+
+        //check for unique value in house
+        for (let checkNum = 1; checkNum <= 9; checkNum++) {
+            for (let houseRow = 0; houseRow < 3; houseRow++) {
+                for (let houseCol = 0; houseCol < 3; houseCol++) {
+                    let checkNumAppearanceInHouseCount = 0;
+                    let lastAppearRow = -1;
+                    let lastAppearCol = -1;
+                    for (let cellRow = 0; cellRow < 3; cellRow++) {
+                        for (let cellCol = 0; cellCol < 3; cellCol++) {
+                            let thisCellRow = (houseRow*3) + cellRow;
+                            let thisCellCol = (houseCol*3) + cellCol;
+                            let thisCell = draft[thisCellRow][thisCellCol];
+                            let checkNumIsInThisCell = thisCell.indexOf(checkNum) !== -1;
+                            if (checkNumIsInThisCell) {
+                                checkNumAppearanceInHouseCount++;
+                                lastAppearRow = thisCellRow;
+                                lastAppearCol = thisCellCol;
+                            }
+                        }
+                    }
+                    if (checkNumAppearanceInHouseCount === 1) {
+                        let cellID = "cell-" + lastAppearRow + "-" + lastAppearCol;
+                        document.getElementById(cellID).innerHTML = checkNum.toString();
+                        if (document.getElementById(cellID).style.background === "white") {
+                            document.getElementById(cellID).style.background = "yellow";
+                        }
+                        sudokuSample[lastAppearRow][lastAppearCol] = checkNum;
+                        draft[lastAppearRow][lastAppearCol] = [checkNum];
+                    }
+                }
+            }
+        }
+
+        //check for unique value in row
+        for (let checkNum = 1; checkNum <= 9; checkNum++) {
+            for (let cellRow = 0; cellRow < 9; cellRow++) {
+                let rowAppearanceCount = 0;
+                let lastAppearRow = -1;
+                let lastAppearCol = -1;
+                for (let cellCol = 0; cellCol <9; cellCol++) {
+                    let thisCell = draft[cellRow][cellCol];
+                    if (thisCell.indexOf(checkNum) !== 1) {
+                        rowAppearanceCount++;
+                        lastAppearRow = cellRow;
+                        lastAppearCol = cellCol;
+                    }
+                }
+                if (rowAppearanceCount === 1) {
+                    let cellID = "cell-" + lastAppearRow + "-" + lastAppearCol;
+                    document.getElementById(cellID).innerHTML = checkNum.toString();
+                    if (document.getElementById(cellID).style.background === "white") {
+                        document.getElementById(cellID).style.background = "yellow";
+                    }
+                    sudokuSample[lastAppearRow][lastAppearCol] = checkNum;
+                    draft[lastAppearRow][lastAppearCol] = [checkNum];
+                }
+            }
+        }
+
+        //check for unique value in col
+        for (let checkNum = 1; checkNum <= 9; checkNum++) {
+            for (let cellCol = 0; cellCol < 9; cellCol++) {
+                let colAppearanceCount = 0;
+                let lastAppearRow = -1;
+                let lastAppearCol = -1;
+                for (let cellRow = 0; cellRow <9; cellRow++) {
+                    let thisCell = draft[cellRow][cellCol];
+                    if (thisCell.indexOf(checkNum) !== 1) {
+                        colAppearanceCount++;
+                        lastAppearRow = cellRow;
+                        lastAppearCol = cellCol;
+                    }
+                }
+                if (colAppearanceCount === 1) {
+                    let cellID = "cell-" + lastAppearRow + "-" + lastAppearCol;
+                    document.getElementById(cellID).innerHTML = checkNum.toString();
+                    if (document.getElementById(cellID).style.background === "white") {
+                        document.getElementById(cellID).style.background = "yellow";
+                    }
+                    sudokuSample[lastAppearRow][lastAppearCol] = checkNum;
+                    draft[lastAppearRow][lastAppearCol] = [checkNum];
+                }
+            }
+        }
+
+        // check for unique array appears array.length times in row
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                let thisCell = draft[row][col];
+                if (thisCell.length > 1) {
+                    let countSimilar = 1;
+                    let similarCols = [col];
+                    for (let checkCol = 0; checkCol < 9; checkCol++) {
+                        let checkCell = draft[row][checkCol];
+                        if (col !== checkCol) {
+                            let isSimilar = true;
+                            for (let i = 0; i < thisCell.length; i++) {
+                                if (thisCell[i] !== checkCell[i]) {
+                                    isSimilar = false;
+                                    break;
+                                }
+                            }
+                            if (isSimilar) {
+                                countSimilar++;
+                                similarCols.push(checkCol);
+                            }
+                        }
+                    }
+                    if (thisCell.length === countSimilar) {
+                        for (let checkCol = 0; checkCol < 9; checkCol++) {
+                            let checkCell = draft[row][checkCol];
+                            if (similarCols.indexOf(checkCol) === -1 && checkCell.length > 1) {
+                                for (let j = 0; j < thisCell.length; j++) {
+                                    let valueToSplice = thisCell[j];
+                                    if (checkCell.indexOf(valueToSplice) !== -1) {
+                                        checkCell.splice(checkCell.indexOf(valueToSplice),1);
+                                        draft[row][checkCol] = checkCell;
+                                        if (draft[row][checkCol].length === 1) {
+                                            let cellID = "cell-" + row + "-" + checkCol;
+                                            if (document.getElementById(cellID).style.background === "white") {
+                                                document.getElementById(cellID).style.background = "yellow";
+                                            }
+                                            sudokuSample[row][checkCol] = draft[row][checkCol][0];
+                                        }
+                                        let cellID = "cell-" + row + "-" + checkCol;
+                                        document.getElementById(cellID).innerHTML = checkCell;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    console.log(sudokuSample);
+    console.log(draft);
+</script>
